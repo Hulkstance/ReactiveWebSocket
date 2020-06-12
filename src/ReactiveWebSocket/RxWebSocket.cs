@@ -129,6 +129,10 @@ namespace ReactiveWebSocket
                         try
                         {
                             await open.CloseAsync(closeAsync.Token);
+
+                            open.Dispose();
+
+                            return new ClosedNormally();
                         }
                         catch (OperationCanceledException)
                         {
@@ -140,9 +144,6 @@ namespace ReactiveWebSocket
                             open.Dispose();
                             return new Faulted();
                         }
-
-                        return new ClosedNormally();
-
                     }))(),
 
                     _ => throw new InvalidTransitionException(this.state.GetType(), input.GetType()),

@@ -59,7 +59,7 @@ namespace ReactiveWebSocket.UnitTests
             rxWebSocket.Sender.TryWrite(new Message(MessageType.Text, Array.Empty<byte>())).ShouldBeFalse();
         }
 
-        [Fact(Timeout = 1000)]
+        [Fact(Timeout = 200)]
         public void socket_should_be_disposed()
         {
             // Arrange
@@ -67,9 +67,9 @@ namespace ReactiveWebSocket.UnitTests
             mock.State.Returns(WebSocketState.Open);
 
             var receiveResultSource = new TaskCompletionSource<ValueWebSocketReceiveResult>();
-            mock.ReceiveAsync(Arg.Any<Memory<byte>>(), Arg.Any<CancellationToken>())
-                .Returns(new ValueTask<ValueWebSocketReceiveResult>(receiveResultSource.Task))
-                .AndDoes(_ => mock.State.Returns(WebSocketState.Closed));
+
+            mock.ReceiveAsync(Arg.Any<Memory<byte>>(), default)
+                .ReturnsForAnyArgs(new ValueTask<ValueWebSocketReceiveResult>(receiveResultSource.Task));
 
             var rxWebSocket = new RxWebSocket(mock);
             rxWebSocket.Receiver.Completion.IsCompleted.ShouldBeFalse();
@@ -78,9 +78,12 @@ namespace ReactiveWebSocket.UnitTests
             mock.When(s => s.Dispose()).Do(c => tcs.SetResult(true));
 
             // Act
+            mock.State.Returns(WebSocketState.Closed);
+            mock.CloseStatus.Returns(WebSocketCloseStatus.NormalClosure);
+            mock.CloseStatusDescription.Returns(string.Empty);
             receiveResultSource.SetResult(new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true));
 
-            Should.CompleteIn(tcs.Task, TimeSpan.FromMilliseconds(500));
+            Should.CompleteIn(tcs.Task, TimeSpan.FromMilliseconds(100));
             mock.Received(1).Dispose();
         }
     }

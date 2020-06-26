@@ -63,7 +63,7 @@ namespace ReactiveWebSocket
             }
 
             this.PostInput(new CloseAsync(cancellationToken));
-            return Task.Run(async () => await this.closeCompletionSource.Task);
+            return Task.Run(async () => await this.closeCompletionSource.Task.ConfigureAwait(false));
         }
 
         public void Dispose()

@@ -79,7 +79,7 @@ namespace ReactiveWebSocket
                             message.Data.AsMemory(),
                             message.Type == MessageType.Text ? WebSocketMessageType.Text : WebSocketMessageType.Binary,
                             true,
-                            cancellationToken).ConfigureAwait(false);
+                            cancellationToken);
                     }
                     finally
                     {
@@ -109,8 +109,7 @@ namespace ReactiveWebSocket
 
                 do
                 {
-                    result = await socket.ReceiveAsync(receiveBuffer.GetMemory(), cancellationToken)
-                        .ConfigureAwait(false);
+                    result = await socket.ReceiveAsync(receiveBuffer.GetMemory(), cancellationToken);
 
                     switch (result.MessageType)
                     {

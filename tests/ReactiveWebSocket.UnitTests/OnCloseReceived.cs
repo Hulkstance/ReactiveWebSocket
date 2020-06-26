@@ -20,15 +20,17 @@ namespace ReactiveWebSocket.UnitTests
 
             var receiveResultSource = new TaskCompletionSource<ValueWebSocketReceiveResult>();
             mock.ReceiveAsync(Arg.Any<Memory<byte>>(), Arg.Any<CancellationToken>())
-                .Returns(new ValueTask<ValueWebSocketReceiveResult>(receiveResultSource.Task))
-                .AndDoes(_ => mock.CloseStatus.Returns(WebSocketCloseStatus.NormalClosure));
+                .Returns(new ValueTask<ValueWebSocketReceiveResult>(receiveResultSource.Task));
 
             var rxWebSocket = new RxWebSocket(mock);
             rxWebSocket.Receiver.Completion.IsCompleted.ShouldBeFalse();
 
             // Act
-            receiveResultSource.SetResult(new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true));
             mock.State.Returns(WebSocketState.Closed);
+            mock.CloseStatus.Returns(WebSocketCloseStatus.NormalClosure);
+            mock.CloseStatusDescription.Returns(string.Empty);
+            receiveResultSource.SetResult(new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true));
+
 
             // Assert
             Should.CompleteIn(rxWebSocket.Receiver.Completion, TimeSpan.FromMilliseconds(100));

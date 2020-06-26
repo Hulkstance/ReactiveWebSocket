@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A16283F4
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactiveWebSocket.IntegrationTests", "tests\ReactiveWebSocket.IntegrationTests\ReactiveWebSocket.IntegrationTests.csproj", "{AE11A88E-0FE8-411C-B181-5868B8B16587}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveWebSocket.UnitTests", "tests\ReactiveWebSocket.UnitTests\ReactiveWebSocket.UnitTests.csproj", "{1D1FC46D-8E09-41AE-9893-35682BE56A22}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactiveWebSocket.UnitTests", "tests\ReactiveWebSocket.UnitTests\ReactiveWebSocket.UnitTests.csproj", "{1D1FC46D-8E09-41AE-9893-35682BE56A22}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -25,9 +25,7 @@ namespace ReactiveWebSocket.IntegrationTests
         {
             using (var rxSocket = new RxWebSocket(await this.CreateAndConnectSocket()))
             {
-                var message = Should.CompleteIn(
-                    rxSocket.ToObservable().FirstAsync().ToTask(),
-                    timeout);
+                var message = Should.CompleteIn(rxSocket.ToObservable().FirstAsync().ToTask(), timeout);
             }
         }
 

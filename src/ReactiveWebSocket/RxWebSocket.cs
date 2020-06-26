@@ -86,11 +86,11 @@ namespace ReactiveWebSocket
 
         private async Task EventLoop()
         {
-            while (await this.inputChannel.Reader.WaitToReadAsync())
+            while (await this.inputChannel.Reader.WaitToReadAsync().ConfigureAwait(false))
             {
                 while (this.inputChannel.Reader.TryRead(out var input))
                 {
-                    await ChangeState(input);
+                    await ChangeState(input).ConfigureAwait(false);
 
                     if (this.state is Closed)
                     {
@@ -128,7 +128,7 @@ namespace ReactiveWebSocket
                     {
                         try
                         {
-                            await open.CloseAsync(closeAsync.Token);
+                            await open.CloseAsync(closeAsync.Token).ConfigureAwait(false);
 
                             open.Dispose();
 
@@ -144,7 +144,7 @@ namespace ReactiveWebSocket
                             open.Dispose();
                             return new Faulted();
                         }
-                    }))(),
+                    }))().ConfigureAwait(false),
 
                     _ => throw new InvalidTransitionException(this.state.GetType(), input.GetType()),
                 };
@@ -182,9 +182,9 @@ namespace ReactiveWebSocket
             /// <exception cref="WebSocketException"></exception>
             public async Task CloseAsync(CancellationToken cancellationToken)
             {
-                await sendLoopTask;
-                await this.socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationToken);
-                await this.receiveLoopTask;
+                await sendLoopTask.ConfigureAwait(false);
+                await this.socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationToken).ConfigureAwait(false);
+                await this.receiveLoopTask.ConfigureAwait(false);
             }
 
             private async Task InitReceiveLoop()
@@ -193,7 +193,7 @@ namespace ReactiveWebSocket
 
                 try
                 {
-                    await channelWriter.ReceiveLoop(this.socket, this.cts.Token);
+                    await channelWriter.ReceiveLoop(this.socket, this.cts.Token).ConfigureAwait(false);
 
                     Debug.Assert(this.socket.CloseStatus.HasValue);
 
@@ -241,7 +241,7 @@ namespace ReactiveWebSocket
             {
                 try
                 {
-                    await this.parent.sendChannel.Reader.SendLoop(this.socket, this.semaphore, this.cts.Token);
+                    await this.parent.sendChannel.Reader.SendLoop(this.socket, this.semaphore, this.cts.Token).ConfigureAwait(false);
                     onSuccess();
                 }
                 catch (OperationCanceledException)

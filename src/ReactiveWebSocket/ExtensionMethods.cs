@@ -1,6 +1,7 @@
 ﻿using NSpecifications;
 using System;
 using System.Buffers;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Reactive.Disposables;
@@ -19,7 +20,7 @@ namespace ReactiveWebSocket
             {
                 try
                 {
-                    while (await rxWebSocket.Receiver.WaitToReadAsync(cancellationToken))
+                    while (await rxWebSocket.Receiver.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
                     {
                         while (rxWebSocket.Receiver.TryRead(out var message))
                         {
@@ -57,24 +58,6 @@ namespace ReactiveWebSocket
         }
 
         /// <summary>
-        /// Throws an ArgumentException if WebSocket is not in state Closed or does not have a CloseStatus.
-        /// </summary>
-        /// <param name="socket">A WebSocket expected to be in state Closed.</param>
-        /// <exception cref="ArgumentException"></exception>
-        private static void ThrowOnNotClosed(this WebSocket socket)
-        {
-            if (socket.State != WebSocketState.Closed)
-            {
-                throw new ArgumentException($"Web socket state must be Closed, but was {socket.State}.", nameof(socket));
-            }
-
-            if (!socket.CloseStatus.HasValue)
-            {
-                throw new ArgumentException("Property CloseStatus must have a value, but was null.", nameof(socket));
-            }
-        }
-
-        /// <summary>
         /// Reads messages from channel and writes them to web socket.
         /// </summary>
         /// <param name="channelReader"></param>
@@ -83,20 +66,20 @@ namespace ReactiveWebSocket
         /// <exception cref="WebSocketException"></exception>
         /// <exception cref="OperationCanceledException"></exception>
         /// <returns></returns>
-        public static async Task SendLoop(this ChannelReader<Message> channelReader, WebSocket socket, SemaphoreSlim semaphore, CancellationToken cancellationToken)
+        internal static async Task SendLoop(this ChannelReader<Message> channelReader, WebSocket socket, SemaphoreSlim semaphore, CancellationToken cancellationToken)
         {
-            while (await channelReader.WaitToReadAsync(cancellationToken))
+            while (await channelReader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 while (channelReader.TryRead(out var message))
                 {
-                    await semaphore.WaitAsync(cancellationToken);
+                    await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                     try
                     {
                         await socket.SendAsync(
                             message.Data.AsMemory(),
                             message.Type == MessageType.Text ? WebSocketMessageType.Text : WebSocketMessageType.Binary,
                             true,
-                            cancellationToken);
+                            cancellationToken).ConfigureAwait(false);
                     }
                     finally
                     {
@@ -143,7 +126,7 @@ namespace ReactiveWebSocket
                 channelWriter.TryWrite(
                     new Message(
                         result.MessageType == WebSocketMessageType.Text ? MessageType.Text : MessageType.Binary,
-                        receiveBuffer.WrittenMemory.ToArray()));
+                        receiveBuffer.WrittenSpan.ToArray()));
 
                 receiveBuffer.Clear();
 

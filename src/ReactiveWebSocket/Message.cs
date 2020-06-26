@@ -1,4 +1,10 @@
-﻿namespace ReactiveWebSocket
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.Contracts;
+using System.Runtime.CompilerServices;
+
+namespace ReactiveWebSocket
 {
     public sealed class Message
     {
@@ -8,6 +14,7 @@
             this.Data = data;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Data Transfer Object")]
         public byte[] Data { get; }
         public MessageType Type { get; }
 

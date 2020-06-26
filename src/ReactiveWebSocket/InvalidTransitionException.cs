@@ -2,7 +2,6 @@
 
 namespace ReactiveWebSocket
 {
-
     [Serializable]
     public class InvalidTransitionException : RxWebSocketException
     {

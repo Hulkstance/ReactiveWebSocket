@@ -5,19 +5,19 @@ namespace ReactiveWebSocket
 {
 
     [Serializable]
-    public class BadClosureException : RxWebSocketException
+    public sealed class BadClosureException : RxWebSocketException
     {
-        public BadClosureException(WebSocketCloseStatus status, string? description) : base(description ?? string.Empty)
+        internal BadClosureException(WebSocketCloseStatus status, string? description) : base(description ?? string.Empty)
         {
             this.CloseStatus = status;
         }
 
-        public BadClosureException(WebSocketCloseStatus status, string? description, Exception inner) : base(description ?? string.Empty, inner)
+        internal BadClosureException(WebSocketCloseStatus status, string? description, Exception inner) : base(description ?? string.Empty, inner)
         {
             this.CloseStatus = status;
         }
 
-        protected BadClosureException(
+        private BadClosureException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context)
         {

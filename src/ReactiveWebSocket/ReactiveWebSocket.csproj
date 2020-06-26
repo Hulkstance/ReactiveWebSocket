@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <Authors>Peter Wretmo</Authors>
     <RepositoryUrl>https://github.com/pwretmo/ReactiveWebSocket</RepositoryUrl>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

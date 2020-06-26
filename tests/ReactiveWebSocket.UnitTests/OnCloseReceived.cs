@@ -61,7 +61,7 @@ namespace ReactiveWebSocket.UnitTests
             rxWebSocket.Sender.TryWrite(new Message(MessageType.Text, Array.Empty<byte>())).ShouldBeFalse();
         }
 
-        [Fact(Timeout = 200)]
+        [Fact(Timeout = 1000)]
         public void socket_should_be_disposed()
         {
             // Arrange
@@ -85,7 +85,7 @@ namespace ReactiveWebSocket.UnitTests
             mock.CloseStatusDescription.Returns(string.Empty);
             receiveResultSource.SetResult(new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true));
 
-            Should.CompleteIn(tcs.Task, TimeSpan.FromMilliseconds(100));
+            Should.CompleteIn(tcs.Task, TimeSpan.FromMilliseconds(1000));
             mock.Received(1).Dispose();
         }
     }

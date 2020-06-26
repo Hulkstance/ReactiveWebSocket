@@ -1,4 +1,5 @@
-﻿using NSpecifications;
+﻿using Microsoft;
+using NSpecifications;
 using ReactiveWebSocket.State.Inputs;
 using System;
 using System.Diagnostics;
@@ -29,6 +30,13 @@ namespace ReactiveWebSocket
         /// <param name="singleSender">true if writers to the channel guarantee that there will only ever be at most one write operation at a time; false if no such constraint is guaranteed.</param>
         public RxWebSocket(WebSocket webSocket, bool singleReceiver = true, bool singleSender = true)
         {
+            Requires.NotNull(webSocket, nameof(webSocket));
+
+            if (webSocket is null)
+            {
+                throw new ArgumentNullException(nameof(webSocket));
+            }
+
             var webSocketState = webSocket.State;
 
             if (webSocketState != WebSocketState.Open)
@@ -43,6 +51,8 @@ namespace ReactiveWebSocket
             this.state = new Open(this, webSocket);
         }
 
+        /// <exception cref="RxWebSocketException"></exception>
+        /// <exception cref="OperationCanceledException"></exception>
         public ChannelReader<Message> Receiver => this.receiveChannel.Reader;
 
         public ChannelWriter<Message> Sender => this.sendChannel.Writer;
@@ -195,22 +205,22 @@ namespace ReactiveWebSocket
                 {
                     await channelWriter.ReceiveLoop(this.socket, this.cts.Token).ConfigureAwait(false);
 
-                    Debug.Assert(this.socket.CloseStatus.HasValue);
+                    Assumes.True(this.socket.CloseStatus.HasValue, "Socket has no CloseStatus");
 
-                    if (this.socket.Is(NormalClosure))
+                    if (this.socket.CloseStatus.Value == WebSocketCloseStatus.NormalClosure)
                     {
                         onSuccess();
                     }
                     else
                     {
-                        onError(this.socket.BadClosureException());
+                        onError(new BadClosureException(this.socket.CloseStatus.Value, this.socket.CloseStatusDescription));
                     }
                 }
                 catch (OperationCanceledException ex)
                 {
                     onCancellation(ex);
                 }
-                catch (Exception ex)
+                catch (WebSocketException ex)
                 {
                     onError(new RxWebSocketException(SOCKET_READ_ERROR, ex));
                 }
@@ -248,7 +258,7 @@ namespace ReactiveWebSocket
                 {
                     onCancelled();
                 }
-                catch (Exception error)
+                catch (WebSocketException error)
                 {
                     onError(new RxWebSocketException(SOCKET_WRITE_ERROR, error));
                 }

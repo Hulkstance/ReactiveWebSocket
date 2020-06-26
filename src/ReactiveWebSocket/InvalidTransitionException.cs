@@ -1,25 +1,20 @@
-﻿using System;
+﻿using Microsoft;
+using System;
 
 namespace ReactiveWebSocket
 {
     [Serializable]
-    public class InvalidTransitionException : RxWebSocketException
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "Required parameters, default constructors not possible")]
+    public sealed class InvalidTransitionException : RxWebSocketException
     {
-        public InvalidTransitionException(Type stateType, Type inputType)
-            : base($"There is no transition for {inputType.Name} from state {stateType.Name}.")
+        internal InvalidTransitionException(Type stateType, Type inputType)
+            : base($"State {GetTypeName(stateType)} has no transition for input {GetTypeName(inputType)} .")
         {
-            this.StateType = stateType;
-            this.InputType = inputType;
+            this.StateType = Requires.NotNull(stateType, nameof(stateType));
+            this.InputType = Requires.NotNull(inputType, nameof(inputType));
         }
 
-        public InvalidTransitionException(Type stateType, Type inputType, string message)
-            : base($"There is no transition for {inputType.Name} from state {stateType.Name}." + $" {message}".Trim())
-        {
-            this.StateType = stateType;
-            this.InputType = inputType;
-        }
-
-        protected InvalidTransitionException(
+        private InvalidTransitionException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context)
         {
@@ -29,5 +24,8 @@ namespace ReactiveWebSocket
 
         public Type StateType { get; }
         public Type InputType { get; }
+
+        private static string GetTypeName(Type type)
+            => type != null ? type.Name : "[null]";
     }
 }

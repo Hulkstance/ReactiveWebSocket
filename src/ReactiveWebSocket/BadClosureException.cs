@@ -5,14 +5,11 @@ namespace ReactiveWebSocket
 {
 
     [Serializable]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "Required property CloseStatus must be initialised in constructor")]
     public sealed class BadClosureException : RxWebSocketException
     {
-        internal BadClosureException(WebSocketCloseStatus status, string? description) : base(description ?? string.Empty)
-        {
-            this.CloseStatus = status;
-        }
-
-        internal BadClosureException(WebSocketCloseStatus status, string? description, Exception inner) : base(description ?? string.Empty, inner)
+        internal BadClosureException(WebSocketCloseStatus status, string message)
+            : base(message)
         {
             this.CloseStatus = status;
         }

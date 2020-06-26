@@ -1,11 +1,10 @@
-﻿using NSpecifications;
+﻿using Microsoft;
 using System;
 using System.Buffers;
-using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -30,31 +29,18 @@ namespace ReactiveWebSocket
 
                     observer.OnCompleted();
                 }
-                catch (OperationCanceledException) { }
-                catch (Exception ex)
+                catch (OperationCanceledException ex) when (ex.CancellationToken == cancellationToken) { /* Unsubscribed */ }
+                catch (OperationCanceledException ex)
+                {
+                    observer.OnError(ex);
+                }
+                catch (RxWebSocketException ex)
                 {
                     observer.OnError(ex);
                 }
 
                 return Disposable.Empty;
             });
-        }
-
-        /// <summary>
-        /// Creates a BadClosureException with WebSocket close status details.
-        /// </summary>
-        /// <param name="socket"></param>
-        /// <param name="inner"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
-        internal static BadClosureException BadClosureException(this WebSocket socket)
-        {
-            Debug.Assert(socket != null);
-            Debug.Assert(socket.State == WebSocketState.Closed);
-            Debug.Assert(socket.CloseStatus.HasValue);
-            Debug.Assert(!socket.Is(RxWebSocket.NormalClosure));
-
-            return new BadClosureException(socket.CloseStatus!.Value, socket.CloseStatusDescription);
         }
 
         /// <summary>
@@ -79,7 +65,7 @@ namespace ReactiveWebSocket
                             message.Data.AsMemory(),
                             message.Type == MessageType.Text ? WebSocketMessageType.Text : WebSocketMessageType.Binary,
                             true,
-                            cancellationToken);
+                            cancellationToken).ConfigureAwait(false);
                     }
                     finally
                     {
@@ -98,38 +84,45 @@ namespace ReactiveWebSocket
         /// <exception cref="OperationCanceledException"></exception>
         public static async Task ReceiveLoop(this ChannelWriter<Message> channelWriter, WebSocket socket, CancellationToken cancellationToken)
         {
+            Requires.NotNull(channelWriter, nameof(channelWriter));
+            Requires.NotNull(socket, nameof(socket));
+
             var bufferWriter = new ArrayBufferWriter<byte>();
 
-            while (await ReadMessageAsync(channelWriter, socket, bufferWriter, cancellationToken).ConfigureAwait(false))
+            while (await ReadMessageAsync().ConfigureAwait(false))
             { }
 
-            static async Task<bool> ReadMessageAsync(ChannelWriter<Message> channelWriter, WebSocket socket, ArrayBufferWriter<byte> receiveBuffer, CancellationToken cancellationToken)
+            async Task<bool> ReadMessageAsync()
             {
                 ValueWebSocketReceiveResult result;
 
                 do
                 {
-                    result = await socket.ReceiveAsync(receiveBuffer.GetMemory(), cancellationToken);
+                    result = await socket.ReceiveAsync(bufferWriter.GetMemory(), cancellationToken).ConfigureAwait(false);
 
                     switch (result.MessageType)
                     {
                         case WebSocketMessageType.Text:
                         case WebSocketMessageType.Binary:
-                            receiveBuffer.Advance(result.Count);
+                            bufferWriter.Advance(result.Count);
                             break;
                         case WebSocketMessageType.Close:
                             return false;
                     }
                 } while (!result.EndOfMessage);
 
-                channelWriter.TryWrite(
-                    new Message(
-                        result.MessageType == WebSocketMessageType.Text ? MessageType.Text : MessageType.Binary,
-                        receiveBuffer.WrittenSpan.ToArray()));
-
-                receiveBuffer.Clear();
+                channelWriter.TryWrite(new Message(Convert(result.MessageType), bufferWriter.WrittenSpan.ToArray()));
+                bufferWriter.Clear();
 
                 return true;
+
+                static MessageType Convert(WebSocketMessageType type) =>
+                    type switch
+                    {
+                        WebSocketMessageType.Text => MessageType.Text,
+                        WebSocketMessageType.Binary => MessageType.Binary,
+                        _ => throw new InvalidOperationException($"Expected web socket message type {WebSocketMessageType.Text} or {WebSocketMessageType.Binary}, but received {type}.")
+                    };
             }
         }
     }

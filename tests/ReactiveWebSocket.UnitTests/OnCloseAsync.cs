@@ -47,12 +47,12 @@ namespace ReactiveWebSocket.UnitTests
             mock.CloseOutputAsync(Arg.Any<WebSocketCloseStatus>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
                 .Returns(closeOutputResultSource.Task);
 
-            Action closeOutputTrigger = () =>
+            void closeOutputTrigger()
             {
                 closeOutputResultSource.SetResult(true);
                 mock.State.Returns(WebSocketState.CloseSent);
                 closeTrigger();
-            };
+            }
 
             var rxSocket = new RxWebSocket(mock);
             rxSocket.Sender.Complete();
@@ -79,22 +79,9 @@ namespace ReactiveWebSocket.UnitTests
             mock.ReceiveAsync(Arg.Any<Memory<byte>>(), Arg.Any<CancellationToken>())
                 .Returns(new ValueTask<ValueWebSocketReceiveResult>(receiveResultSource.Task));
 
-            Action receiveTrigger = () =>
-            {
-                receiveResultSource.SetCanceled();
-                mock.State.Returns(WebSocketState.Aborted);
-            };
-
             var closeOutputResultSource = new TaskCompletionSource<bool>();
             mock.CloseOutputAsync(Arg.Any<WebSocketCloseStatus>(), Arg.Any<string>(), cancelled)
                 .Returns(closeOutputResultSource.Task);
-
-            Action closeOutputTrigger = () =>
-            {
-                closeOutputResultSource.SetCanceled();
-                mock.State.Returns(WebSocketState.Aborted);
-                receiveTrigger();
-            };
 
             var rxSocket = new RxWebSocket(mock);
             rxSocket.Sender.Complete();
@@ -103,7 +90,10 @@ namespace ReactiveWebSocket.UnitTests
 
             var closeTask = rxSocket.CloseAsync(cancelled);
 
-            closeOutputTrigger();
+            mock.State.Returns(WebSocketState.Aborted);
+            closeOutputResultSource.SetCanceled();
+            receiveResultSource.SetCanceled();
+
             Should.CompleteIn(closeTask, timeout);
 
             await mock.Received(1).CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancelled);

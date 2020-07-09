@@ -4,7 +4,6 @@ using System.Buffers;
 using System.Net.WebSockets;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;

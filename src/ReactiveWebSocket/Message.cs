@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics.Contracts;
-using System.Runtime.CompilerServices;
-
-namespace ReactiveWebSocket
+﻿namespace ReactiveWebSocket
 {
     public sealed class Message
     {

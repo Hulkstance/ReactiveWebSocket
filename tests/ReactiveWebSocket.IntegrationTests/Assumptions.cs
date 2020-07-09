@@ -1,6 +1,5 @@
 ﻿using Shouldly;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
@@ -8,8 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Utf8Json;
 using Xunit;
-
-using ReactiveWebSocket;
 using System.Threading.Channels;
 
 namespace ReactiveWebSocket.IntegrationTests

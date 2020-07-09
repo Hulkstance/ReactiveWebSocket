@@ -82,7 +82,7 @@ namespace ReactiveWebSocket
         /// </summary>
         /// <exception cref="WebSocketException"></exception>
         /// <exception cref="OperationCanceledException"></exception>
-        public static async Task ReceiveLoop(this ChannelWriter<Message> channelWriter, WebSocket socket, CancellationToken cancellationToken)
+        internal static async Task ReceiveLoop(this ChannelWriter<Message> channelWriter, WebSocket socket, CancellationToken cancellationToken)
         {
             Requires.NotNull(channelWriter, nameof(channelWriter));
             Requires.NotNull(socket, nameof(socket));

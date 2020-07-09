@@ -16,7 +16,7 @@ namespace ReactiveWebSocket.IntegrationTests
     {
         private static readonly Uri bitfinexUri = new Uri("wss://api-pub.bitfinex.com/ws/2");
 
-        private static readonly TimeSpan timeout = Debugger.IsAttached ? TimeSpan.FromDays(1) : TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan timeout = Debugger.IsAttached ? TimeSpan.FromDays(1) : TimeSpan.FromSeconds(2);
 
         private readonly CancellationTokenSource cts = new CancellationTokenSource(timeout);
 

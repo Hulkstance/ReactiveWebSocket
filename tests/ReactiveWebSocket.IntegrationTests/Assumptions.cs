@@ -13,7 +13,7 @@ namespace ReactiveWebSocket.IntegrationTests
 {
     public class Assumptions
     {
-        private static readonly TimeSpan timeout = Debugger.IsAttached ? TimeSpan.FromDays(1) : TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan timeout = Debugger.IsAttached ? TimeSpan.FromDays(1) : TimeSpan.FromSeconds(2);
         
         private readonly CancellationTokenSource cts = new CancellationTokenSource(timeout);
 

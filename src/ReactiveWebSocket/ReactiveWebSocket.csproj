@@ -4,8 +4,9 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
     <Authors>Peter Wretmo</Authors>
-    <RepositoryUrl>https://github.com/pwretmo/ReactiveWebSocket</RepositoryUrl>
-    <Version>1.0.2</Version>
+    <RepositoryUrl>https://github.com/pwretmo/ReactiveWebSocket.git</RepositoryUrl>
+    <Version>1.0.3</Version>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
